@@ -1,5 +1,5 @@
 from doctest import master
-
+import os
 import pygame
 from pygame.draw_py import draw_polygon
 
@@ -17,7 +17,7 @@ class Player(pygame.Rect):
         super().__init__(300, 300, 20, 20)
 
     def draw(self):
-        pygame.draw.rect(screen, "gray", self, 0)
+        pygame.draw.rect(screen, (245,228,156), self, 0)
 
 
 
@@ -32,8 +32,13 @@ class Object(pygame.Rect):
         self.y+=self.vy
 
 class Tree(Object):
+    def __init__(self, x, y, width, height, image_path):
+        super().__init__(x, y, width, height)
+        self.image = pygame.image.load(image_path)
+
     def draw(self):
-        pygame.draw.rect(screen, "green", self, 0)
+        screen.blit(self.image, (self.x, self.y))  # Draw the tree image
+
 
 class House(Object):
     def draw(self):
@@ -43,9 +48,9 @@ class House(Object):
 
 player = Player()
 
-
-master_list.append(Tree(500, 300, 10, 50))
-master_list.append(Tree(-50, 300, 10, 50))
+tree_one = os.path.expanduser("~/Downloads/pixil-frame-0 (2).png")
+master_list.append(Tree(500, 300, 10, 50, tree_one))
+master_list.append(Tree(-50, 300, 10, 50, tree_one))
 master_list.append(House(200,300,12,12))
 
 show_popup = None  # Flag to indicate if the pop-up should be shown
@@ -54,6 +59,7 @@ def show_collision_popup():
     popup_width, popup_height = 200, 100
     popup_rect = pygame.Rect(200, 250, popup_width, popup_height)
     pygame.draw.rect(screen, "lightgray", popup_rect)
+
 
 
 while True:
@@ -115,7 +121,7 @@ while True:
 
     # Do logical updates here.
 
-    screen.fill("white")  # Fill the display with a solid color
+    screen.fill((123, 191, 98)) # Fill the display with a solid color
 
     # Render the graphics here.
     player.draw()
