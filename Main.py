@@ -5,7 +5,7 @@ from pygame.draw_py import draw_polygon
 
 pygame.init()
 
-screen = pygame.display.set_mode((600, 600))
+screen = pygame.display.set_mode((800, 800))
 
 clock = pygame.time.Clock()
 
@@ -14,7 +14,7 @@ master_list = []
 
 class Player(pygame.Rect):
     def __init__(self):
-        super().__init__(300, 300, 20, 20)
+        super().__init__(400, 400, 20, 20)
 
     def draw(self):
         pygame.draw.rect(screen, (245,228,156), self, 0)
@@ -48,7 +48,7 @@ class House(Object):
 
 player = Player()
 
-tree_one = os.path.expanduser("~/Downloads/pixil-frame-0 (2).png")
+tree_one = os.path.expanduser("tree_one.png")
 master_list.append(Tree(500, 300, 10, 50, tree_one))
 master_list.append(Tree(-50, 300, 10, 50, tree_one))
 master_list.append(House(200,300,12,12))
@@ -73,7 +73,7 @@ while True:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:
                     for obj in master_list:
-                        obj.y =- 1
+                        obj.y -= 5
                         obj.vx = 0
                         obj.vy = 0
                     show_popup = None
