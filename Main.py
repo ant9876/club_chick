@@ -12,10 +12,13 @@ clock = pygame.time.Clock()
 
 master_list = []
 
+house_list = []
+
 
 is_touching = False
 
 first_draw = True
+
 
 chick_left = os.path.expanduser("chick_left.png")
 chick_right = os.path.expanduser("chick_right.png")
@@ -66,8 +69,19 @@ class Bush(Object):
         screen.blit(self.image, (self.x, self.y))
 
 class House(Object):
+    def __init__(self, x, y, width, height, image_path):
+        super().__init__(x, y, width, height)
+        self.image = pygame.image.load(image_path)
+
+
+
     def draw(self):
-        pygame.draw.rect(screen, "brown", self, 0)
+        screen.blit(self.image, (self.x, self.y))
+        door_rect = pygame.Rect(self.x + 133, self.y + 188, 35, 51)
+        pygame.draw.rect(screen, "pink", door_rect)
+
+    def get_rect(self):
+        return pygame.Rect(self.x + 133, self.y + 188, 35, 51)
 
 
 
@@ -76,7 +90,9 @@ player = Player(chick_front, chick_back, chick_right, chick_left)
 
 master_list.append(Tree(500, 300,  tree_one))
 master_list.append(Tree(-50, 300,  tree_one))
-master_list.append(House(200,300, 20,20))
+house_1 = os.path.expanduser("house1.png")
+house_list.append(House(300, 200, 300, 300, house_1))
+
 
 for i in range(0,40):
     master_list.append(Bush(-600+i*110,900,bush_one))
@@ -124,39 +140,85 @@ while True:
             pygame.quit()
             raise SystemExit
 
+
         else:
+
             if event.type == pygame.KEYDOWN:
+
                 if event.key == pygame.K_LEFT:
+
                     player.current_image = player.image4
+
                     for obj in master_list:
                         obj.vx += 3
+
+                    for house in house_list:
+                        house.vx += 3
+
                 elif event.key == pygame.K_RIGHT:
+
                     player.current_image = player.image3
+
                     for obj in master_list:
                         obj.vx -= 3
+
+                    for house in house_list:
+                        house.vx -= 3
+
                 elif event.key == pygame.K_UP:
+
                     player.current_image = player.image2
+
                     for obj in master_list:
                         obj.vy += 3
+
+                    for house in house_list:
+                        house.vy += 3
+
                 elif event.key == pygame.K_DOWN:
+
                     player.current_image = player.image1
+
                     for obj in master_list:
                         obj.vy -= 3
+
+                    for house in house_list:
+                        house.vy -= 3
+
 
             elif event.type == pygame.KEYUP:
+
                 if event.key == pygame.K_LEFT:
+
                     for obj in master_list:
                         obj.vx -= 3
+
+                    for house in house_list:
+                        house.vx -= 3
+
                 elif event.key == pygame.K_RIGHT:
+
                     for obj in master_list:
                         obj.vx += 3
+
+                    for house in house_list:
+                        house.vx += 3
+
                 elif event.key == pygame.K_UP:
+
                     for obj in master_list:
                         obj.vy -= 3
+
+                    for house in house_list:
+                        house.vy -= 3
+
                 elif event.key == pygame.K_DOWN:
+
                     for obj in master_list:
                         obj.vy += 3
 
+                    for house in house_list:
+                        house.vy += 3
 
 
     inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2,
@@ -164,18 +226,18 @@ while True:
     for obj in master_list:
         obj.update()
 
+    for house in house_list:
+        house.update()
+
     is_touching = False  # Reset the flag at the start of each frame
-    for obj in master_list:
-        if isinstance(obj, House) and inside_rect.colliderect(obj):
-            is_touching = True  # Set to True if the green rect is touching the house
-            break  # No need to check further
+    for house in house_list:
+            door_rect = house.get_rect()  # Get the door rectangle
+            if door_rect.colliderect(inside_rect):  # Check if player intersects with the door
+                is_touching = True  # Set the flag if the player is touching the door
+                show_popup = (player.x, player.y)  # Show the popup only if player is at the door
+            else:
+                show_popup = None  # Don't
 
-
-
-    inside_rect = pygame.Rect( player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
-    for obj in master_list:
-        if isinstance(obj, House) and inside_rect.colliderect(obj):
-            show_popup = (player.x, player.y)  # Set the flag if a rock collision occurs
 
 
     # Do logical updates here.
@@ -184,12 +246,20 @@ while True:
 
     # Render the graphics here.
 
+
+    for house in house_list:
+        house.draw()
+
     player.draw()
 
     for obj in master_list:
         obj.draw()
 
+
+
     pygame.draw.rect(screen, "green", inside_rect)
+
+
 
     if show_popup:
         show_collision_popup()
