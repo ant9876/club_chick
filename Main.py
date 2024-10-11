@@ -77,8 +77,8 @@ class House(Object):
 
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
-        door_rect = pygame.Rect(self.x + 133, self.y + 188, 35, 51)
-        pygame.draw.rect(screen, "pink", door_rect)
+        #door_rect = pygame.Rect(self.x + 133, self.y + 188, 35, 51)
+        #pygame.draw.rect(screen, "pink", door_rect)
 
     def get_rect(self):
         return pygame.Rect(self.x + 133, self.y + 188, 35, 51)
@@ -257,7 +257,7 @@ while True:
 
 
 
-    pygame.draw.rect(screen, "green", inside_rect)
+    #pygame.draw.rect(screen, "green", inside_rect)
 
 
 
