@@ -327,8 +327,7 @@ while True:
 
         # Check for house interaction
         for house in house_list:
-            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
-                                      player.width // 2, player.height // 2)
+            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
             door_rect = house.get_rect()
             if door_rect.colliderect(inside_rect):
                 is_touching = True
@@ -349,16 +348,14 @@ while True:
         screen.fill((123, 191, 98))  # Fill the display with a solid color
 
         # Render the graphics here.
-        draw_stats_bar(apples_count)
-
         for house in house_list:
                 house.draw()
+
         player.draw()
+
         for obj in master_list:
                 obj.draw()
 
-
-        player.draw()
 
         for obj in master_list:
             obj.draw()  # Draw the object
@@ -373,11 +370,11 @@ while True:
                 obj.draw_popup()
 
 
+        draw_stats_bar(apples_count)
 
                 # Draw the tree's bounding rectangle
-                tree_rect = obj.get_rect()
-                #pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
-
+                # tree_rect = obj.get_rect()
+                # pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
                 # pygame.draw.rect(screen, "green", inside_rect)
 
         if show_popup:
