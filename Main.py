@@ -209,7 +209,7 @@ def show_collision_popup():
         font = pygame.font.SysFont('Courier New', 24)
         text1_surface = font.render("Welcome to:", True, (0, 0, 0))
         text2_surface = font.render("House!", True, (0, 0, 0))
-        text3_surface = font.render("Type 'A' if you", True, (0, 0, 0))
+        text3_surface = font.render("Type 'H' if you", True, (0, 0, 0))
         text4_surface = font.render("wish to enter.", True, (0, 0, 0))
 
         text1_rect = text1_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 50))
@@ -282,11 +282,13 @@ while True:
                             if player_rect.colliderect(obj.get_rect()):
                                 obj.collect_apples()
 
-                # Handle entering a house
-                elif event.key == pygame.K_a and is_touching:
-                    game_state = "blank"  # Enter the blank screen if 'A' is pressed when touching the door
-                    entered_game = True  # Mark that we've entered the game
-                    space_pressed = False  # Reset the space bar flag when entering the game
+                elif event.key == pygame.K_h and is_touching:
+                    game_state = "blank"  # Change the game state to 'blank' when 'H' key is pressed
+                    entered_game = True  # Set the flag for entering the house
+                    space_pressed = False
+
+
+
 
             # Stop movement when the keys are released
             elif event.type == pygame.KEYUP and game_state == "map":
@@ -334,54 +336,54 @@ while True:
             else:
                 show_popup = None
 
+
+
     # Handle game state "blank" logic
-    elif game_state == "blank":
+    if game_state == "blank":
         screen.fill((255, 255, 255))  # Blank white screen
         if entered_game and not space_pressed:
             show_game_screen()
 
-    # Do logical updates here.
 
-    screen.fill((123, 191, 98))  # Fill the display with a solid color
+    if game_state == "map":
+        screen.fill((123, 191, 98))  # Fill the display with a solid color
 
-    # Render the graphics here.
-    draw_stats_bar(apples_count)
+        # Render the graphics here.
+        draw_stats_bar(apples_count)
 
-    for house in house_list:
-            house.draw()
-    player.draw()
-    for obj in master_list:
-            obj.draw()
-
-
-    player.draw()
-
-    for obj in master_list:
-        obj.draw()  # Draw the object
-        if isinstance(obj, Apple_Tree):
-            tree_rect = obj.get_rect()
-            if inside_rect.colliderect(tree_rect):  # If the player is touching the Apple_Tree interaction area
-                obj.first_interact()  # Trigger interaction (sets show_popup to True)
-            else:
-                obj.leave_interaction()  # If player leaves the interaction area, hide the popup
-
-            obj.draw_popup()
+        for house in house_list:
+                house.draw()
+        player.draw()
+        for obj in master_list:
+                obj.draw()
 
 
+        player.draw()
 
-            # Draw the tree's bounding rectangle
-            tree_rect = obj.get_rect()
-            #pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
+        for obj in master_list:
+            obj.draw()  # Draw the object
+            if isinstance(obj, Apple_Tree):
+                tree_rect = obj.get_rect()
+                inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
+                if inside_rect.colliderect(tree_rect):  # If the player is touching the Apple_Tree interaction area
+                    obj.first_interact()  # Trigger interaction (sets show_popup to True)
+                else:
+                    obj.leave_interaction()  # If player leaves the interaction area, hide the popup
 
-            # pygame.draw.rect(screen, "green", inside_rect)
+                obj.draw_popup()
 
-    if show_popup:
-        show_collision_popup()
 
-    elif game_state == "blank":
-        screen.fill((255, 255, 255))  # Blank white screen
-        if entered_game and not space_pressed:
-            show_game_screen()  # Display welcome text if space is not yet pressed
+
+                # Draw the tree's bounding rectangle
+                tree_rect = obj.get_rect()
+                #pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
+
+                # pygame.draw.rect(screen, "green", inside_rect)
+
+        if show_popup:
+            show_collision_popup()
+
+
 
     #pygame.display.update()
 
