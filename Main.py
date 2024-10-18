@@ -238,6 +238,7 @@ def show_game_screen():
     text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
     screen.blit(text_surface, text_rect)
+player_speed = 3
 
 while True:
     for event in pygame.event.get():
@@ -247,87 +248,85 @@ while True:
 
         if event.type == pygame.KEYDOWN:
             if game_state == "map":
+                # Player stays still, but objects move
                 if event.key == pygame.K_LEFT:
                     player.current_image = player.image4
                     for obj in master_list:
-                        obj.vx += 3
+                        obj.vx += 3  # Move objects to the right (relative to the player)
                     for house in house_list:
                         house.vx += 3
                 elif event.key == pygame.K_RIGHT:
                     player.current_image = player.image3
                     for obj in master_list:
-                        obj.vx -= 3
+                        obj.vx -= 3  # Move objects to the left (relative to the player)
                     for house in house_list:
                         house.vx -= 3
                 elif event.key == pygame.K_UP:
                     player.current_image = player.image2
                     for obj in master_list:
-                        obj.vy += 3
+                        obj.vy += 3  # Move objects down (relative to the player)
                     for house in house_list:
                         house.vy += 3
                 elif event.key == pygame.K_DOWN:
                     player.current_image = player.image1
                     for obj in master_list:
-                        obj.vy -= 3
+                        obj.vy -= 3  # Move objects up (relative to the player)
                     for house in house_list:
                         house.vy -= 3
-                elif event.key == pygame.K_a:  # If the player presses the 'A' key
+
+                # Handle interaction with apple trees
+                elif event.key == pygame.K_a:
                     for obj in master_list:
                         if isinstance(obj, Apple_Tree):
-                            player_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2,player.height // 2)
+                            player_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
                             if player_rect.colliderect(obj.get_rect()):
                                 obj.collect_apples()
 
+                # Handle entering a house
                 elif event.key == pygame.K_a and is_touching:
                     game_state = "blank"  # Enter the blank screen if 'A' is pressed when touching the door
                     entered_game = True  # Mark that we've entered the game
                     space_pressed = False  # Reset the space bar flag when entering the game
-                    # Check if the player's rectangle overlaps with the tree's rectangle
 
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    for obj in master_list:
-                        obj.vx -= 3
-                    for house in house_list:
-                        house.vx -= 3
-                elif event.key == pygame.K_RIGHT:
-                    for obj in master_list:
-                        obj.vx += 3
-                    for house in house_list:
-                        house.vx += 3
-                elif event.key == pygame.K_UP:
-                    for obj in master_list:
-                        obj.vy -= 3
-                    for house in house_list:
-                        house.vy -= 3
-                elif event.key == pygame.K_DOWN:
-                    for obj in master_list:
-                        obj.vy += 3
-                    for house in house_list:
-                        house.vy += 3
+            # Stop movement when the keys are released
+            elif event.type == pygame.KEYUP and game_state == "map":
+                if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
+                    stop_movement()  # Stop all movement
+
+            # Handle input in the "blank" state
             elif game_state == "blank":
                 if event.key == pygame.K_e:
                     game_state = "map"  # Return to the original map if 'E' is pressed
                     entered_game = False  # Reset the flag when exiting
                 elif event.key == pygame.K_SPACE:
-                    space_pressed = True
-        # if event.type == pygame.KEYUP:
-        #     if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
-        #         stop_movement()
+                    space_pressed = True  # Handle space press
 
-    inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
+        if event.type == pygame.KEYUP and game_state == "map":
+            if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                for obj in master_list:
+                    obj.vx = 0  # Stop horizontal movement
+                for house in house_list:
+                    house.vx = 0
+            if event.key in [pygame.K_UP, pygame.K_DOWN]:
+                for obj in master_list:
+                    obj.vy = 0  # Stop vertical movement
+                for house in house_list:
+                    house.vy = 0
 
-
+    # Handle game state "map" logic
     if game_state == "map":
-        inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
         is_touching = False  # Reset the flag at the start of each frame
 
+        # Update all objects and houses
         for obj in master_list:
             obj.update()
         for house in house_list:
             house.update()
 
+        # Check for house interaction
         for house in house_list:
+            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
+                                      player.width // 2, player.height // 2)
             door_rect = house.get_rect()
             if door_rect.colliderect(inside_rect):
                 is_touching = True
@@ -335,6 +334,11 @@ while True:
             else:
                 show_popup = None
 
+    # Handle game state "blank" logic
+    elif game_state == "blank":
+        screen.fill((255, 255, 255))  # Blank white screen
+        if entered_game and not space_pressed:
+            show_game_screen()
 
     # Do logical updates here.
 
@@ -383,3 +387,5 @@ while True:
 
     pygame.display.flip()  # Refresh on-screen display
     clock.tick(60)  # wait until next frame (at 60 FPS)
+
+
