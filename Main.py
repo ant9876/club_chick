@@ -3,12 +3,11 @@ import os
 import pygame
 from pygame.draw_py import draw_polygon
 from pygame.examples.cursors import image
+import BubbleGame
 
 pygame.init()
 
-screen = pygame.display.set_mode((800, 800))
-
-clock = pygame.time.Clock()
+PLAYER_SPEED = 3
 
 master_list = []
 house_list = []
@@ -29,6 +28,10 @@ bush_one = os.path.expanduser("bush_one.png")
 house_1 = os.path.expanduser("house1.png")
 apple_one = os.path.expanduser("tree_apple.png")
 
+bubble_game = BubbleGame
+
+screen = pygame.display.set_mode((800, 800))
+clock = pygame.time.Clock()
 
 class Player(pygame.Rect):
     def __init__(self, image_path1, image_path2, image_path3, image_path4):
@@ -42,7 +45,6 @@ class Player(pygame.Rect):
     def draw(self):
         screen.blit(self.current_image, (self.x, self.y))
 
-
 class Object(pygame.Rect):
     def __init__(self, x, y, width, height):
         super().__init__(x, y, width, height)
@@ -53,17 +55,14 @@ class Object(pygame.Rect):
         self.x += self.vx
         self.y += self.vy
 
-
 class Tree(Object):
     def __init__(self, x, y, image_path):
         self.image = pygame.image.load(image_path)
         self.interacted = False
         super().__init__(x, y, self.image.get_width(), self.image.get_height())
 
-
     def draw(self):
         screen.blit(self.image, (self.x, self.y))  # Draw the tree image
-
 
 class Apple_Tree(Tree):
     def __init__(self, x, y, image_path):
@@ -132,8 +131,6 @@ class Apple_Tree(Tree):
             screen.blit(text2_surface, text2_rect)
             screen.blit(text3_surface, text3_rect)
 
-
-
 class Bush(Object):
     def __init__(self, x, y, image_path):
         self.image = pygame.image.load(image_path)
@@ -141,7 +138,6 @@ class Bush(Object):
 
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
-
 
 class House(Object):
     def __init__(self, x, y, width, height, image_path):
@@ -177,6 +173,24 @@ def draw_stats_bar(apples_count):
     # Blit the text onto the screen
     screen.blit(text_surface, text_rect)
 
+class BubbleGame:
+    def __init__(self):
+        self.running = True
+
+    def run(self, screen):
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    raise SystemExit
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_e:  # Press 'e' to exit back to the home screen
+                        self.running = False
+
+            screen.fill((0, 0, 255))  # Example: Fill the screen with blue
+            pygame.display.flip()
+            clock.tick(60)  # Maintain frame rate
+
 player = Player(chick_front, chick_back, chick_right, chick_left)
 
 master_list.append(Tree(500, 300, tree_one))
@@ -189,7 +203,6 @@ for i in range(0, 40):
     master_list.append(Bush(-600 + i * 110, 900, bush_one))
 
 show_popup = None  # Flag to indicate if the pop-up should be shown
-
 
 def show_collision_popup():
     if is_touching:
@@ -222,7 +235,6 @@ def show_collision_popup():
         screen.blit(text3_surface, text3_rect)
         screen.blit(text4_surface, text4_rect)
 
-
 # Function to stop the player's movement
 def stop_movement():
     for obj in master_list:
@@ -238,7 +250,6 @@ def show_game_screen():
     text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
     screen.blit(text_surface, text_rect)
-player_speed = 3
 
 while True:
     for event in pygame.event.get():
@@ -252,27 +263,27 @@ while True:
                 if event.key == pygame.K_LEFT:
                     player.current_image = player.image4
                     for obj in master_list:
-                        obj.vx += 3  # Move objects to the right (relative to the player)
+                        obj.vx += PLAYER_SPEED  # Move objects to the right (relative to the player)
                     for house in house_list:
-                        house.vx += 3
+                        house.vx += PLAYER_SPEED
                 elif event.key == pygame.K_RIGHT:
                     player.current_image = player.image3
                     for obj in master_list:
-                        obj.vx -= 3  # Move objects to the left (relative to the player)
+                        obj.vx -= PLAYER_SPEED  # Move objects to the left (relative to the player)
                     for house in house_list:
-                        house.vx -= 3
+                        house.vx -= PLAYER_SPEED
                 elif event.key == pygame.K_UP:
                     player.current_image = player.image2
                     for obj in master_list:
-                        obj.vy += 3  # Move objects down (relative to the player)
+                        obj.vy += PLAYER_SPEED  # Move objects down (relative to the player)
                     for house in house_list:
-                        house.vy += 3
+                        house.vy += PLAYER_SPEED
                 elif event.key == pygame.K_DOWN:
                     player.current_image = player.image1
                     for obj in master_list:
-                        obj.vy -= 3  # Move objects up (relative to the player)
+                        obj.vy -= PLAYER_SPEED # Move objects up (relative to the player)
                     for house in house_list:
-                        house.vy -= 3
+                        house.vy -= PLAYER_SPEED
 
                 # Handle interaction with apple trees
                 elif event.key == pygame.K_a:
@@ -287,9 +298,6 @@ while True:
                     entered_game = True  # Set the flag for entering the house
                     space_pressed = False
 
-
-
-
             # Stop movement when the keys are released
             elif event.type == pygame.KEYUP and game_state == "map":
                 if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
@@ -301,7 +309,12 @@ while True:
                     game_state = "map"  # Return to the original map if 'E' is pressed
                     entered_game = False  # Reset the flag when exiting
                 elif event.key == pygame.K_SPACE:
-                    space_pressed = True  # Handle space press
+                    space_pressed = True
+                    try:
+                        bubble_game.bubble_main()  # Call the run method on the instance
+                    except Exception as e:
+                        print(f"Error while running BubbleGame: {e}")
+                        space_pressed = False
 
         if event.type == pygame.KEYUP and game_state == "map":
             if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
@@ -336,14 +349,11 @@ while True:
             else:
                 show_popup = None
 
-
-
     # Handle game state "blank" logic
     if game_state == "blank":
         screen.fill((255, 255, 255))  # Blank white screen
         if entered_game and not space_pressed:
             show_game_screen()
-
 
     if game_state == "map":
         screen.fill((123, 191, 98))  # Fill the display with a solid color
@@ -372,8 +382,6 @@ while True:
 
                 obj.draw_popup()
 
-
-
                 # Draw the tree's bounding rectangle
                 tree_rect = obj.get_rect()
                 #pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
@@ -383,11 +391,7 @@ while True:
         if show_popup:
             show_collision_popup()
 
-
-
     #pygame.display.update()
 
     pygame.display.flip()  # Refresh on-screen display
     clock.tick(60)  # wait until next frame (at 60 FPS)
-
-
