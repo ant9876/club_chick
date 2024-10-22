@@ -310,11 +310,8 @@ while True:
                     entered_game = False  # Reset the flag when exiting
                 elif event.key == pygame.K_SPACE:
                     space_pressed = True
-                    try:
-                        bubble_game.bubble_main()  # Call the run method on the instance
-                    except Exception as e:
-                        print(f"Error while running BubbleGame: {e}")
-                        space_pressed = False
+                    apples_collected = bubble_game.bubble_main()  # Call the run method on the instance
+                    apples_count += apples_collected  # Add collected apples to the home screen counter
 
         if event.type == pygame.KEYUP and game_state == "map":
             if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:

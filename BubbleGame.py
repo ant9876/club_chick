@@ -18,8 +18,10 @@ right_edge = 600
 top_edge = 20
 bottom_edge = 550
 
+apple_image = pygame.image.load('apple.png')
+
 def pick_a_color():
-    colors = ['red', 'yellow', 'green', 'aqua', 'blue', 'magenta']
+    colors = ['#C08B61', '#DF5E24', '#C00425', '#59010F', '#3B3B39']
     return random.choice(colors)
 
 class Ball(pygame.Rect):
@@ -34,6 +36,8 @@ class Ball(pygame.Rect):
     def draw(self):
         pygame.draw.ellipse(screen, self.color, self, 0)
         pygame.draw.ellipse(screen, 'black', self, 1)
+        image_rect = apple_image.get_rect(center=self.center)
+        screen.blit(apple_image, image_rect)
 
     def update(self):
         if self.is_moving:
@@ -117,9 +121,13 @@ def draw_arrow(start, end):
 
 shooting_ball = None
 
+
 def bubble_main():
     global shooting_ball  # Declare shooting_ball as a global variable
     global current  # Declare current as a global variable
+    global apples_collected  # Counter for apples collected
+    apples_collected = 0  # Initialize the counter
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -128,7 +136,7 @@ def bubble_main():
 
             # Check for the "E" key to exit the BubbleGame
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-                return  # Exit the bubble_main function to return to the map
+                return apples_collected  # Return the apples collected when exiting
 
             elif event.type == pygame.MOUSEBUTTONDOWN and (shooting_ball is None):
                 mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -141,10 +149,14 @@ def bubble_main():
                     # Calculate angle and speed
                     angle = math.atan2(dy, dx)
                     shooting_ball = current  # Use the current ball for shooting
-                    shooting_ball.vx = 10 * math.cos(angle)  # Adjust speed as necessary
-                    shooting_ball.vy = 10 * math.sin(angle)
+                    shooting_ball.vx = 20 * math.cos(angle)  # Adjust speed as necessary
+                    shooting_ball.vy = 20 * math.sin(angle)
                     shooting_ball.is_moving = True  # Set the ball to moving state
                     current = Ball(current.x, current.y, pick_a_color())
+
+
+        pygame.display.flip()
+        clock.tick(60)
 
         def find_target_position(ball):
             for b in balls:
@@ -162,6 +174,7 @@ def bubble_main():
             return ball.x, ball.y  # Return original position if no nearby balls are found
 
         def check_neighbors(ball, connected_balls=None):
+            global apples_collected  # Access the global counter
             if connected_balls is None:
                 connected_balls = set()
 
@@ -187,6 +200,8 @@ def bubble_main():
                             check_neighbors(b, connected_balls)  # Recursively check neighbors
 
             if len(connected_balls) > 2:
+                if len(connected_balls) > 2:
+                    apples_collected += 1  # Increment the counter
                 for b in connected_balls:
                     if b in balls:
                         balls.remove(b)
@@ -215,8 +230,8 @@ def bubble_main():
         for b in balls_to_remove:
             balls.remove(b)
 
-        screen.fill('purple')
-        pygame.draw.rect(screen, 'gray', pygame.Rect(left_edge, top_edge, right_edge, bottom_edge))
+        screen.fill('maroon')
+        pygame.draw.rect(screen, 'tan', pygame.Rect(left_edge, top_edge, right_edge, bottom_edge))
 
 
         current.draw()
@@ -231,6 +246,11 @@ def bubble_main():
         font = pygame.font.Font(None, 36)
         text_surface = font.render('Press "e" twice to exit', True, 'black')
         screen.blit(text_surface, (500, 600))
+
+        # Draw the apples collected counter
+        font = pygame.font.Font(None, 36)
+        text_surface = font.render(f'Apples Collected: {apples_collected}', True, 'black')
+        screen.blit(text_surface, (20, 600))  # Position it on the left side
 
         pygame.display.flip()
         clock.tick(60)
