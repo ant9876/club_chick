@@ -21,7 +21,7 @@ bottom_edge = 550
 apple_image = pygame.image.load('apple.png')
 
 def pick_a_color():
-    colors = ['#C08B61', '#DF5E24', '#C00425', '#59010F', '#3B3B39']
+    colors = ['#C08B61', '#ef513d', '#C00425', '#59010F', '#FB8345']
     return random.choice(colors)
 
 class Ball(pygame.Rect):
@@ -230,7 +230,7 @@ def bubble_main():
         for b in balls_to_remove:
             balls.remove(b)
 
-        screen.fill('maroon')
+        screen.fill('brown')
         pygame.draw.rect(screen, 'tan', pygame.Rect(left_edge, top_edge, right_edge, bottom_edge))
 
 
