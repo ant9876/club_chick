@@ -28,6 +28,7 @@ tree_one = os.path.expanduser("tree_one.png")
 bush_one = os.path.expanduser("bush_one.png")
 house_1 = os.path.expanduser("house1.png")
 apple_one = os.path.expanduser("tree_apple.png")
+river = os.path.expanduser("river.png")
 
 
 class Player(pygame.Rect):
@@ -44,8 +45,9 @@ class Player(pygame.Rect):
 
 
 class Object(pygame.Rect):
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, image_path):
+        self.image = pygame.image.load(image_path)
+        super().__init__(x, y, self.image.get_width(), self.image.get_height())
         self.vx = 0
         self.vy = 0
 
@@ -53,12 +55,15 @@ class Object(pygame.Rect):
         self.x += self.vx
         self.y += self.vy
 
+    def draw(self):
+        screen.blit(self.image, (self.x, self.y))  # Draw the tree image
+
 
 class Tree(Object):
     def __init__(self, x, y, image_path):
         self.image = pygame.image.load(image_path)
         self.interacted = False
-        super().__init__(x, y, self.image.get_width(), self.image.get_height())
+        super().__init__(x, y, image_path)
 
 
     def draw(self):
@@ -137,15 +142,15 @@ class Apple_Tree(Tree):
 class Bush(Object):
     def __init__(self, x, y, image_path):
         self.image = pygame.image.load(image_path)
-        super().__init__(x, y, self.image.get_width(), self.image.get_height())
+        super().__init__(x, y, image_path)
 
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
 
 
 class House(Object):
-    def __init__(self, x, y, width, height, image_path):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, image_path):
+        super().__init__(x, y, image_path)
         self.image = pygame.image.load(image_path)
 
     def draw(self):
@@ -183,8 +188,10 @@ master_list.append(Tree(500, 300, tree_one))
 master_list.append(Tree(-50, 300, tree_one))
 master_list.append(Apple_Tree(80,400,apple_one))
 
-house_list.append(House(300, 200, 300, 300, house_1))
 
+house_list.append(House(300, 200, house_1))
+for i in range(0,20):
+    master_list.append(Object(-600+i*100, 800, river))
 for i in range(0, 40):
     master_list.append(Bush(-600 + i * 110, 900, bush_one))
 
@@ -327,8 +334,7 @@ while True:
 
         # Check for house interaction
         for house in house_list:
-            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
-                                      player.width // 2, player.height // 2)
+            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
             door_rect = house.get_rect()
             if door_rect.colliderect(inside_rect):
                 is_touching = True
@@ -349,16 +355,14 @@ while True:
         screen.fill((123, 191, 98))  # Fill the display with a solid color
 
         # Render the graphics here.
-        draw_stats_bar(apples_count)
-
         for house in house_list:
                 house.draw()
+
         player.draw()
+
         for obj in master_list:
                 obj.draw()
 
-
-        player.draw()
 
         for obj in master_list:
             obj.draw()  # Draw the object
@@ -373,11 +377,11 @@ while True:
                 obj.draw_popup()
 
 
+        draw_stats_bar(apples_count)
 
                 # Draw the tree's bounding rectangle
-                tree_rect = obj.get_rect()
-                #pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
-
+                # tree_rect = obj.get_rect()
+                # pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
                 # pygame.draw.rect(screen, "green", inside_rect)
 
         if show_popup:
