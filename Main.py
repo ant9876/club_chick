@@ -13,8 +13,9 @@ clock = pygame.time.Clock()
 master_list = []
 house_list = []
 
-is_touching = False
 first_draw = True
+in_barn = False
+in_house = False
 game_state = "map"  # Game state to track what screen you're on
 entered_game = False  # Flag to track if we entered the game screen
 space_pressed = False  # Flag to track if the space bar is pressed
@@ -28,6 +29,7 @@ tree_one = os.path.expanduser("tree_one.png")
 bush_one = os.path.expanduser("bush_one.png")
 house_1 = os.path.expanduser("house1.png")
 apple_one = os.path.expanduser("tree_apple.png")
+barn_1 = os.path.expanduser("barn.png")
 
 
 class Player(pygame.Rect):
@@ -184,6 +186,7 @@ master_list.append(Tree(-50, 300, tree_one))
 master_list.append(Apple_Tree(80,400,apple_one))
 
 house_list.append(House(300, 200, 300, 300, house_1))
+house_list.append(House(-400, 180, 300, 302, barn_1))
 
 for i in range(0, 40):
     master_list.append(Bush(-600 + i * 110, 900, bush_one))
@@ -192,7 +195,7 @@ show_popup = None  # Flag to indicate if the pop-up should be shown
 
 
 def show_collision_popup():
-    if is_touching:
+    if in_barn or in_house:
         popup_width, popup_height = 250, 150
         popup_rect = pygame.Rect(screen.get_width() / 2 - popup_width / 2, screen.get_height() / 2 - popup_height / 2,
                                  popup_width, popup_height)
@@ -234,10 +237,16 @@ def stop_movement():
 
 # Function to show the game screen text
 def show_game_screen():
-    font = pygame.font.SysFont('Courier New', 20)
-    text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
-    text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
-    screen.blit(text_surface, text_rect)
+    if game_state == "blank":
+        font = pygame.font.SysFont('Courier New', 20)
+        text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
+        screen.blit(text_surface, text_rect)
+    if game_state == "barn":
+        font = pygame.font.SysFont('Courier New', 20)
+        text_surface = font.render("Welcome to barn game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=(screen.get_width() / 2, screen.get_height() / 2))
+        screen.blit(text_surface, text_rect)
 player_speed = 3
 
 while True:
@@ -282,12 +291,18 @@ while True:
                             if player_rect.colliderect(obj.get_rect()):
                                 obj.collect_apples()
 
-                elif event.key == pygame.K_h and is_touching:
-                    game_state = "blank"  # Change the game state to 'blank' when 'H' key is pressed
-                    entered_game = True  # Set the flag for entering the house
-                    space_pressed = False
 
+                elif event.key == pygame.K_h:
 
+                    if in_house:
+                        game_state = "blank"  # Change the game state to 'blank' when 'H' key is pressed
+                        entered_game = True  # Set the flag for entering the house
+                        space_pressed = False
+
+                    if in_barn:
+                        game_state = "barn"  # Change the game state to 'blank' when 'H' key is pressed
+                        entered_game = True  # Set the flag for entering the house
+                        space_pressed = False
 
 
             # Stop movement when the keys are released
@@ -296,7 +311,7 @@ while True:
                     stop_movement()  # Stop all movement
 
             # Handle input in the "blank" state
-            elif game_state == "blank":
+            elif game_state == "blank" or game_state == "barn":
                 if event.key == pygame.K_e:
                     game_state = "map"  # Return to the original map if 'E' is pressed
                     entered_game = False  # Reset the flag when exiting
@@ -317,7 +332,9 @@ while True:
 
     # Handle game state "map" logic
     if game_state == "map":
-        is_touching = False  # Reset the flag at the start of each frame
+        in_barn = False
+        in_house = False
+        # Reset the flag at the start of each frame
 
         # Update all objects and houses
         for obj in master_list:
@@ -329,17 +346,26 @@ while True:
         for house in house_list:
             inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
                                       player.width // 2, player.height // 2)
-            door_rect = house.get_rect()
-            if door_rect.colliderect(inside_rect):
-                is_touching = True
+            door_rect_1 = house_list[0].get_rect()
+            door_rect_2 = house_list[1].get_rect()
+            if door_rect_1.colliderect(inside_rect):
+                in_house = True
+                in_barn = False
+                show_popup = (player.x, player.y)
+                break
+            if door_rect_2.colliderect(inside_rect):
+                in_barn = True
+                in_house = False
                 show_popup = (player.x, player.y)
             else:
                 show_popup = None
+                in_barn = False
+                in_house = False
 
 
 
     # Handle game state "blank" logic
-    if game_state == "blank":
+    if game_state == "blank" or game_state == "barn":
         screen.fill((255, 255, 255))  # Blank white screen
         if entered_game and not space_pressed:
             show_game_screen()
@@ -378,7 +404,9 @@ while True:
                 tree_rect = obj.get_rect()
                 #pygame.draw.rect(screen, "green", tree_rect, 2)  # Green rectangle with a 2-pixel border
 
-                # pygame.draw.rect(screen, "green", inside_rect)
+               # pygame.draw.rect(screen, "green", inside_rect)
+                # pygame.draw.rect(screen, "green", door_rect)
+
 
         if show_popup:
             show_collision_popup()
@@ -389,5 +417,3 @@ while True:
 
     pygame.display.flip()  # Refresh on-screen display
     clock.tick(60)  # wait until next frame (at 60 FPS)
-
-
