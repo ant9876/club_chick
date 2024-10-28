@@ -1,4 +1,4 @@
-from distutils.command.check import check
+
 from random import randint
 import pygame
 import random

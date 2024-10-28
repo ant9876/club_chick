@@ -195,9 +195,10 @@ master_list.append(Tree(500, 300, tree_one))
 master_list.append(Tree(-50, 300, tree_one))
 master_list.append(Apple_Tree(80,400,apple_one))
 
+house_list.append(House(300, 200, house_1))
 house_list.append(House(-400, 180, barn_1))
 
-house_list.append(House(300, 200, house_1))
+
 for i in range(0,20):
     master_list.append(Object(-600+i*100, 800, river))
 for i in range(0, 40):
@@ -250,9 +251,6 @@ def stop_movement():
 # Function to show the game screen text
 def show_game_screen():
     font = pygame.font.SysFont('Courier New', 20)
-    text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
-    text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
-    screen.blit(text_surface, text_rect)
     if game_state == "blank":
         font = pygame.font.SysFont('Courier New', 20)
         text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
@@ -330,8 +328,9 @@ while True:
                     entered_game = False  # Reset the flag when exiting
                 elif event.key == pygame.K_SPACE:
                     space_pressed = True
-                    apples_collected = bubble_game.bubble_main()
-                    apples_count += apples_collected
+                    if game_state == "blank":
+                        apples_collected = bubble_game.bubble_main()
+                        apples_count += apples_collected
 
         if event.type == pygame.KEYUP and game_state == "map":
             if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
