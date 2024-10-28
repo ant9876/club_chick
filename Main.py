@@ -12,11 +12,15 @@ PLAYER_SPEED = 3
 master_list = []
 house_list = []
 
-is_touching = False
 first_draw = True
 game_state = "map"
 entered_game = False
 space_pressed = False
+in_barn = False
+in_house = False
+game_state = "map"  # Game state to track what screen you're on
+entered_game = False  # Flag to track if we entered the game screen
+space_pressed = False  # Flag to track if the space bar is pressed
 apples_count=0
 
 chick_left = os.path.expanduser("chick_left.png")
@@ -28,6 +32,7 @@ bush_one = os.path.expanduser("bush_one.png")
 house_1 = os.path.expanduser("house1.png")
 apple_one = os.path.expanduser("tree_apple.png")
 river = os.path.expanduser("river.png")
+barn_1 = os.path.expanduser("barn.png")
 
 bubble_game = BubbleGame
 
@@ -96,25 +101,44 @@ class Apple_Tree(Tree):
             popup_rect = pygame.Rect(screen.get_width() / 2 - popup_width / 2,
                                      screen.get_height() / 2 - popup_height / 2, popup_width, popup_height)
 
+            # Create a transparent surface with SRCALPHA mode
             popup_surface = pygame.Surface((popup_width, popup_height), pygame.SRCALPHA)
-            popup_surface.fill((200, 200, 200, 200))
+
+            # Fill the surface with a semi-transparent color (RGBA)
+            popup_surface.fill((200, 200, 200, 200))  # Light gray with 50% opacity
+
+            # Blit the transparent popup surface to the main screen
             screen.blit(popup_surface, popup_rect.topleft)
-            font = pygame.font.SysFont("Times New Roman", 30)
+
+            # Load and render text in Times New Roman
+            font = pygame.font.SysFont("Times New Roman", 30)  # Set to Times New Roman with size 30
+
+            # Split the text into three lines
             text1 = "Press A by any"
             text2 = "apple tree to"
             text3 = "collect Apples!"
+
+            # Render the first line
             text1_surface = font.render(text1, True, (0, 0, 0))
             text1_rect = text1_surface.get_rect(
-                center=(popup_rect.centerx, popup_rect.centery - 40))
+                center=(popup_rect.centerx, popup_rect.centery - 40))  # Adjust y-position for centering
+
+            # Render the second line
             text2_surface = font.render(text2, True, (0, 0, 0))
             text2_rect = text2_surface.get_rect(
-                center=(popup_rect.centerx, popup_rect.centery))
+                center=(popup_rect.centerx, popup_rect.centery))  # Adjust y-position for centering
+
+            # Render the third line
             text3_surface = font.render(text3, True, (0, 0, 0))
             text3_rect = text3_surface.get_rect(
-                center=(popup_rect.centerx, popup_rect.centery + 40))
+                center=(popup_rect.centerx, popup_rect.centery + 40))  # Adjust y-position for centering
+
+            # Blit the text onto the screen
             screen.blit(text1_surface, text1_rect)
             screen.blit(text2_surface, text2_rect)
             screen.blit(text3_surface, text3_rect)
+
+
 
 class Bush(Object):
     def __init__(self, x, y, image_path):
@@ -171,6 +195,7 @@ master_list.append(Tree(500, 300, tree_one))
 master_list.append(Tree(-50, 300, tree_one))
 master_list.append(Apple_Tree(80,400,apple_one))
 
+house_list.append(House(-400, 180, barn_1))
 
 house_list.append(House(300, 200, house_1))
 for i in range(0,20):
@@ -178,15 +203,22 @@ for i in range(0,20):
 for i in range(0, 40):
     master_list.append(Bush(-600 + i * 110, 900, bush_one))
 
-show_popup = None
+show_popup = None  # Flag to indicate if the pop-up should be shown
+
 
 def show_collision_popup():
-    if is_touching:
+    if in_barn or in_house:
         popup_width, popup_height = 250, 150
         popup_rect = pygame.Rect(screen.get_width() / 2 - popup_width / 2, screen.get_height() / 2 - popup_height / 2,
                                  popup_width, popup_height)
+
+        # Create a transparent surface with SRCALPHA mode
         popup_surface = pygame.Surface((popup_width, popup_height), pygame.SRCALPHA)
-        popup_surface.fill((200, 200, 200, 200))
+
+        # Fill the surface with a semi-transparent color (RGBA)
+        popup_surface.fill((200, 200, 200, 200))  # Light gray with 50% opacity
+
+        # Blit the transparent popup surface to the main screen
         screen.blit(popup_surface, popup_rect.topleft)
 
         font = pygame.font.SysFont('Courier New', 24)
@@ -204,6 +236,9 @@ def show_collision_popup():
         screen.blit(text2_surface, text2_rect)
         screen.blit(text3_surface, text3_rect)
         screen.blit(text4_surface, text4_rect)
+
+
+# Function to stop the player's movement
 def stop_movement():
     for obj in master_list:
         obj.vx = 0
@@ -212,11 +247,23 @@ def stop_movement():
         house.vx = 0
         house.vy = 0
 
+# Function to show the game screen text
 def show_game_screen():
     font = pygame.font.SysFont('Courier New', 20)
     text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
     screen.blit(text_surface, text_rect)
+    if game_state == "blank":
+        font = pygame.font.SysFont('Courier New', 20)
+        text_surface = font.render("Welcome to house game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
+        screen.blit(text_surface, text_rect)
+    if game_state == "barn":
+        font = pygame.font.SysFont('Courier New', 20)
+        text_surface = font.render("Welcome to barn game! Press 'space' continue or 'e' to exit.", True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=(screen.get_width() / 2, screen.get_height() / 2))
+        screen.blit(text_surface, text_rect)
+player_speed = 3
 
 while True:
     for event in pygame.event.get():
@@ -257,18 +304,30 @@ while True:
                             if player_rect.colliderect(obj.get_rect()):
                                 obj.collect_apples()
 
-                elif event.key == pygame.K_h and is_touching:
-                    game_state = "blank"
-                    entered_game = True
-                    space_pressed = False
+
+                elif event.key == pygame.K_h:
+
+                    if in_house:
+                        game_state = "blank"  # Change the game state to 'blank' when 'H' key is pressed
+                        entered_game = True  # Set the flag for entering the house
+                        space_pressed = False
+
+                    if in_barn:
+                        game_state = "barn"  # Change the game state to 'blank' when 'H' key is pressed
+                        entered_game = True  # Set the flag for entering the house
+                        space_pressed = False
+
+
+            # Stop movement when the keys are released
             elif event.type == pygame.KEYUP and game_state == "map":
                 if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
-                    stop_movement()
+                    stop_movement()  # Stop all movement
 
-            elif game_state == "blank":
+            # Handle input in the "blank" state
+            elif game_state == "blank" or game_state == "barn":
                 if event.key == pygame.K_e:
-                    game_state = "map"
-                    entered_game = False
+                    game_state = "map"  # Return to the original map if 'E' is pressed
+                    entered_game = False  # Reset the flag when exiting
                 elif event.key == pygame.K_SPACE:
                     space_pressed = True
                     apples_collected = bubble_game.bubble_main()
@@ -277,40 +336,56 @@ while True:
         if event.type == pygame.KEYUP and game_state == "map":
             if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 for obj in master_list:
-                    obj.vx = 0
+                    obj.vx = 0  # Stop horizontal movement
                 for house in house_list:
                     house.vx = 0
             if event.key in [pygame.K_UP, pygame.K_DOWN]:
                 for obj in master_list:
-                    obj.vy = 0
+                    obj.vy = 0  # Stop vertical movement
                 for house in house_list:
                     house.vy = 0
 
+    # Handle game state "map" logic
     if game_state == "map":
-        is_touching = False
+        in_barn = False
+        in_house = False
+        # Reset the flag at the start of each frame
 
         for obj in master_list:
             obj.update()
         for house in house_list:
             house.update()
         for house in house_list:
-            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
-            door_rect = house.get_rect()
-            if door_rect.colliderect(inside_rect):
-                is_touching = True
+            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
+                                      player.width // 2, player.height // 2)
+            door_rect_1 = house_list[0].get_rect()
+            door_rect_2 = house_list[1].get_rect()
+            if door_rect_1.colliderect(inside_rect):
+                in_house = True
+                in_barn = False
+                show_popup = (player.x, player.y)
+                break
+            if door_rect_2.colliderect(inside_rect):
+                in_barn = True
+                in_house = False
                 show_popup = (player.x, player.y)
             else:
                 show_popup = None
+                in_barn = False
+                in_house = False
 
-    if game_state == "blank":
-        screen.fill((255, 255, 255))
+    # Handle game state "blank" logic
+    if game_state == "blank" or game_state == "barn":
+        screen.fill((255, 255, 255))  # Blank white screen
         if entered_game and not space_pressed:
             show_game_screen()
 
+
     if game_state == "map":
-        screen.fill((123, 191, 98))
+        screen.fill((123, 191, 98))  # Fill the display with a solid color
 
         # Render the graphics here.
+
         for house in house_list:
                 house.draw()
 
