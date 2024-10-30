@@ -33,6 +33,7 @@ house_1 = os.path.expanduser("house1.png")
 apple_one = os.path.expanduser("tree_apple.png")
 river = os.path.expanduser("river.png")
 barn_1 = os.path.expanduser("barn.png")
+garden_one = os.path.expanduser('garden.png')
 
 bubble_game = BubbleGame
 
@@ -148,6 +149,15 @@ class Bush(Object):
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
 
+class Garden(Object):
+    def __init__(self, x, y, image_path):
+        self.image = pygame.image.load(image_path)
+        super().__init__(x, y, image_path)
+
+    def draw(self):
+        screen.blit(self.image, (self.x, self.y))
+
+
 class House(Object):
     def __init__(self, x, y, image_path):
         super().__init__(x, y, image_path)
@@ -189,6 +199,25 @@ class BubbleGame:
             pygame.display.flip()
             clock.tick(60)
 
+class HorseGame:
+    def __init__(self):
+        self.running = True
+
+    def run(self, screen):
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    raise SystemExit
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_e:
+                        self.running = False
+
+            screen.fill((0, 0, 255))
+            pygame.display.flip()
+            clock.tick(60)
+
+
 player = Player(chick_front, chick_back, chick_right, chick_left)
 
 master_list.append(Tree(500, 300, tree_one))
@@ -204,11 +233,12 @@ for i in range(0,20):
 for i in range(0, 40):
     master_list.append(Bush(-600 + i * 110, 900, bush_one))
 
+master_list.append(Garden(-700, 300, garden_one))
+
 show_popup = None  # Flag to indicate if the pop-up should be shown
 
 
 def show_collision_popup():
-    if in_barn or in_house:
         popup_width, popup_height = 250, 150
         popup_rect = pygame.Rect(screen.get_width() / 2 - popup_width / 2, screen.get_height() / 2 - popup_height / 2,
                                  popup_width, popup_height)
@@ -222,21 +252,41 @@ def show_collision_popup():
         # Blit the transparent popup surface to the main screen
         screen.blit(popup_surface, popup_rect.topleft)
 
-        font = pygame.font.SysFont('Courier New', 24)
-        text1_surface = font.render("Welcome to:", True, (0, 0, 0))
-        text2_surface = font.render("House!", True, (0, 0, 0))
-        text3_surface = font.render("Type 'H' if you", True, (0, 0, 0))
-        text4_surface = font.render("wish to enter.", True, (0, 0, 0))
+        if in_barn:
+            font = pygame.font.SysFont('Courier New', 24)
+            text1_surface = font.render("Welcome to:", True, (0, 0, 0))
 
-        text1_rect = text1_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 50))
-        text2_rect = text2_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 20))
-        text3_rect = text3_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery + 10))
-        text4_rect = text4_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery + 40))
+            text2_surface = font.render("Barn!", True, (0, 0, 0))
+            text3_surface = font.render("Type 'H' if you", True, (0, 0, 0))
+            text4_surface = font.render("wish to enter.", True, (0, 0, 0))
 
-        screen.blit(text1_surface, text1_rect)
-        screen.blit(text2_surface, text2_rect)
-        screen.blit(text3_surface, text3_rect)
-        screen.blit(text4_surface, text4_rect)
+            text1_rect = text1_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 50))
+            text2_rect = text2_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 20))
+            text3_rect = text3_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery + 10))
+            text4_rect = text4_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery + 40))
+
+            screen.blit(text1_surface, text1_rect)
+            screen.blit(text2_surface, text2_rect)
+            screen.blit(text3_surface, text3_rect)
+            screen.blit(text4_surface, text4_rect)
+
+        if in_house:
+            font = pygame.font.SysFont('Courier New', 24)
+            text1_surface = font.render("Welcome to:", True, (0, 0, 0))
+
+            text2_surface = font.render("House!", True, (0, 0, 0))
+            text3_surface = font.render("Type 'H' if you", True, (0, 0, 0))
+            text4_surface = font.render("wish to enter.", True, (0, 0, 0))
+
+            text1_rect = text1_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 50))
+            text2_rect = text2_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery - 20))
+            text3_rect = text3_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery + 10))
+            text4_rect = text4_surface.get_rect(center=(popup_rect.centerx, popup_rect.centery + 40))
+
+            screen.blit(text1_surface, text1_rect)
+            screen.blit(text2_surface, text2_rect)
+            screen.blit(text3_surface, text3_rect)
+            screen.blit(text4_surface, text4_rect)
 
 
 # Function to stop the player's movement
