@@ -8,6 +8,10 @@ import BubbleGame
 pygame.init()
 
 PLAYER_SPEED = 3
+is_hungry = False
+is_thirsty = False
+in_water = False
+has_apples = False
 
 master_list = []
 house_list = []
@@ -22,6 +26,8 @@ game_state = "map"  # Game state to track what screen you're on
 entered_game = False  # Flag to track if we entered the game screen
 space_pressed = False  # Flag to track if the space bar is pressed
 apples_count=0
+total_count =0
+
 
 chick_left = os.path.expanduser("chick_left.png")
 chick_right = os.path.expanduser("chick_right.png")
@@ -51,6 +57,8 @@ class Player(pygame.Rect):
     def draw(self):
         screen.blit(self.current_image, (self.x, self.y))
 
+
+
 class Object(pygame.Rect):
     def __init__(self, x, y, image_path):
         self.image = pygame.image.load(image_path)
@@ -64,6 +72,12 @@ class Object(pygame.Rect):
 
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
+
+
+class River(Object):
+    def __init__(self,x, y, image_path):
+        self.image=pygame.image.load(image_path)
+        super().__init__(x, y, image_path)
 
 
 class Tree(Object):
@@ -166,7 +180,18 @@ def draw_stats_bar(apples_count):
     bar_rect = pygame.Rect(0, 0, screen.get_width(), bar_height)
     pygame.draw.rect(screen, (211, 211, 211), bar_rect)
     font = pygame.font.SysFont("Times New Roman", 20)
-    stats_text = f"Apples: {apples_count}"
+
+    # Check the player's current status and set the text accordingly
+    if is_hungry and is_thirsty:
+        stats_text = f"Welcome to club_chick!       Apples: {apples_count}      //      Health: Hungry & Thirsty :("
+    elif is_thirsty:
+        stats_text = f"Welcome to club_chick!       Apples: {apples_count}      //      Health: Thirsty :/"
+    elif is_hungry:
+        stats_text = f"Welcome to club_chick!       Apples: {apples_count}      //      Health: Hungry :/"
+    else:
+        stats_text = f"Welcome to club_chick!       Apples: {apples_count}      //      Health: Happy!"
+
+    # Render and display the text
     text_surface = font.render(stats_text, True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=(bar_rect.centerx, bar_rect.centery))
     screen.blit(text_surface, text_rect)
@@ -190,19 +215,26 @@ class BubbleGame:
             clock.tick(60)
 
 player = Player(chick_front, chick_back, chick_right, chick_left)
+player_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
 
-master_list.append(Tree(500, 300, tree_one))
-master_list.append(Tree(-50, 300, tree_one))
-master_list.append(Apple_Tree(80,400,apple_one))
+master_list.append(Tree(830, 220, tree_one))
+master_list.append(Tree(-180, 220, tree_one))
 
-house_list.append(House(300, 200, house_1))
-house_list.append(House(-400, 180, barn_1))
+
+house_list.append(House(650, 80, house_1))
+house_list.append(House(-150, 80, barn_1))
 
 
 for i in range(0,20):
-    master_list.append(Object(-600+i*100, 800, river))
+    master_list.append(River(-600+i*100, 760, river))
 for i in range(0, 40):
-    master_list.append(Bush(-600 + i * 110, 900, bush_one))
+    master_list.append(Bush(-600 + i * 110, 680, bush_one))
+for i in range(-2, 3):
+    master_list.append(Apple_Tree(i*100+350,200,apple_one))
+    master_list.append(Apple_Tree(i * 100 + 350, 400, apple_one))
+for i in range(-2, 4):
+    master_list.append(Apple_Tree(i * 100 + 300, 300, apple_one))
+
 
 show_popup = None  # Flag to indicate if the pop-up should be shown
 
@@ -269,7 +301,20 @@ while True:
             pygame.quit()
             raise SystemExit
 
+        if apples_count>1:
+            has_apples = True
+
+        total_count+=1
+        if total_count%100==0:
+            is_thirsty=True
+        if total_count%20==0:
+            is_hungry=True
+
+
+
         if event.type == pygame.KEYDOWN:
+            if is_hungry and event.key == pygame.K_f:
+                is_hungry = False
             if game_state == "map":
                 if event.key == pygame.K_LEFT:
                     player.current_image = player.image4
@@ -298,7 +343,6 @@ while True:
                 elif event.key == pygame.K_a:
                     for obj in master_list:
                         if isinstance(obj, Apple_Tree):
-                            player_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56, player.width // 2, player.height // 2)
                             if player_rect.colliderect(obj.get_rect()):
                                 obj.collect_apples()
 
@@ -348,10 +392,20 @@ while True:
     if game_state == "map":
         in_barn = False
         in_house = False
+        in_water = False
         # Reset the flag at the start of each frame
 
         for obj in master_list:
             obj.update()
+            if isinstance(obj, River) and player_rect.colliderect(obj):
+                in_water = True
+                if in_water and is_thirsty:
+                    is_thirsty = False
+                    break
+
+
+
+
         for house in house_list:
             house.update()
         for house in house_list:
@@ -390,8 +444,7 @@ while True:
 
         player.draw()
 
-        for obj in master_list:
-                obj.draw()
+
 
 
         for obj in master_list:
@@ -417,6 +470,12 @@ while True:
         if show_popup:
             show_collision_popup()
 
+        font = pygame.font.SysFont("Courier New", 20)
+        # Create the text to display the in_water status
+        status_text = f"In Water: {'Yes' if in_water else 'No'}"
+        text_surface = font.render(status_text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(topleft=(10, 10))  # Position it at the top left corner
+        screen.blit(text_surface, text_rect)
     #pygame.display.update()
 
     pygame.display.flip()  # Refresh on-screen display
