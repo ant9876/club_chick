@@ -265,7 +265,7 @@ for i in range(-2, 4):
     master_list.append(Apple_Tree(i * 100 + 300, 300, apple_one))
 
 
-master_list.append(Garden(-700, 300, garden_one))
+master_list.append(Garden(-550, 200, garden_one))
 
 show_popup = None  # Flag to indicate if the pop-up should be shown
 
