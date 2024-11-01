@@ -4,6 +4,7 @@ import pygame
 from pygame.draw_py import draw_polygon
 from pygame.examples.cursors import image
 import BubbleGame
+import HorseGame
 
 pygame.init()
 
@@ -11,7 +12,7 @@ PLAYER_SPEED = 3
 is_hungry = False
 is_thirsty = False
 in_water = False
-has_apples = False
+
 
 master_list = []
 house_list = []
@@ -22,9 +23,6 @@ entered_game = False
 space_pressed = False
 in_barn = False
 in_house = False
-game_state = "map"  # Game state to track what screen you're on
-entered_game = False  # Flag to track if we entered the game screen
-space_pressed = False  # Flag to track if the space bar is pressed
 apples_count=0
 total_count =0
 
@@ -42,6 +40,7 @@ barn_1 = os.path.expanduser("barn.png")
 garden_one = os.path.expanduser('garden.png')
 
 bubble_game = BubbleGame
+horse_game = HorseGame
 
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
@@ -112,7 +111,7 @@ class Apple_Tree(Tree):
 
     def draw_popup(self):
         if self.show_popup:
-            popup_width, popup_height = 250, 150
+            popup_width, popup_height = 250, 220
             popup_rect = pygame.Rect(screen.get_width() / 2 - popup_width / 2,
                                      screen.get_height() / 2 - popup_height / 2, popup_width, popup_height)
 
@@ -132,21 +131,26 @@ class Apple_Tree(Tree):
             text1 = "Press A by any"
             text2 = "apple tree to"
             text3 = "collect Apples!"
+            text4 = "Press F to feed"
 
             # Render the first line
             text1_surface = font.render(text1, True, (0, 0, 0))
             text1_rect = text1_surface.get_rect(
-                center=(popup_rect.centerx, popup_rect.centery - 40))  # Adjust y-position for centering
+                center=(popup_rect.centerx, popup_rect.centery - 50))  # Adjust y-position for centering
 
             # Render the second line
             text2_surface = font.render(text2, True, (0, 0, 0))
             text2_rect = text2_surface.get_rect(
-                center=(popup_rect.centerx, popup_rect.centery))  # Adjust y-position for centering
+                center=(popup_rect.centerx, popup_rect.centery-10))  # Adjust y-position for centering
 
             # Render the third line
             text3_surface = font.render(text3, True, (0, 0, 0))
             text3_rect = text3_surface.get_rect(
-                center=(popup_rect.centerx, popup_rect.centery + 40))  # Adjust y-position for centering
+                center=(popup_rect.centerx, popup_rect.centery + 30))  # Adjust y-position for centering
+
+            text4_surface = font.render(text4, True, (0, 0, 0))
+            text4_rect = text4_surface.get_rect(
+                center=(popup_rect.centerx, popup_rect.centery + 70))  # Adjust y-position for centering
 
 
 
@@ -154,8 +158,7 @@ class Apple_Tree(Tree):
             screen.blit(text1_surface, text1_rect)
             screen.blit(text2_surface, text2_rect)
             screen.blit(text3_surface, text3_rect)
-
-
+            screen.blit(text4_surface, text4_rect)
 
 class Bush(Object):
     def __init__(self, x, y, image_path):
@@ -208,41 +211,7 @@ def draw_stats_bar(apples_count):
     text_rect = text_surface.get_rect(center=(bar_rect.centerx, bar_rect.centery))
     screen.blit(text_surface, text_rect)
 
-class BubbleGame:
-    def __init__(self):
-        self.running = True
 
-    def run(self, screen):
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    raise SystemExit
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_e:
-                        self.running = False
-
-            screen.fill((0, 0, 255))
-            pygame.display.flip()
-            clock.tick(60)
-
-class HorseGame:
-    def __init__(self):
-        self.running = True
-
-    def run(self, screen):
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    raise SystemExit
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_e:
-                        self.running = False
-
-            screen.fill((0, 0, 255))
-            pygame.display.flip()
-            clock.tick(60)
 
 
 player = Player(chick_front, chick_back, chick_right, chick_left)
@@ -353,13 +322,12 @@ while True:
             pygame.quit()
             raise SystemExit
 
-        if apples_count>1:
-            has_apples = True
+
 
         total_count+=1
-        if total_count%100==0:
+        if total_count%120==0:
             is_thirsty=True
-        if total_count%20==0:
+        if total_count%50==0:
             is_hungry=True
 
 
@@ -367,6 +335,7 @@ while True:
         if event.type == pygame.KEYDOWN:
             if is_hungry and event.key == pygame.K_f:
                 is_hungry = False
+                apples_count-=3
             if game_state == "map":
                 if event.key == pygame.K_LEFT:
                     player.current_image = player.image4
@@ -427,6 +396,11 @@ while True:
                     if game_state == "blank":
                         apples_collected = bubble_game.bubble_main()
                         apples_count += apples_collected
+                    if game_state == "barn":
+                        count=horse_game.horse_main(apples_count)
+                        apples_count = count
+
+
 
         if event.type == pygame.KEYUP and game_state == "map":
             if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
@@ -457,27 +431,26 @@ while True:
 
 
 
-
-        for house in house_list:
-            house.update()
-        for house in house_list:
-            inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
-                                      player.width // 2, player.height // 2)
-            door_rect_1 = house_list[0].get_rect()
-            door_rect_2 = house_list[1].get_rect()
-            if door_rect_1.colliderect(inside_rect):
-                in_house = True
-                in_barn = False
-                show_popup = (player.x, player.y)
-                break
-            if door_rect_2.colliderect(inside_rect):
-                in_barn = True
-                in_house = False
-                show_popup = (player.x, player.y)
-            else:
-                show_popup = None
-                in_barn = False
-                in_house = False
+    for house in house_list:
+        house.update()
+    for house in house_list:
+        inside_rect = pygame.Rect(player.x + player.width // 4 + 64, player.y + player.height // 4 + 56,
+                                  player.width // 2, player.height // 2)
+        door_rect_1 = house_list[0].get_rect()
+        door_rect_2 = house_list[1].get_rect()
+        if door_rect_1.colliderect(inside_rect):
+            in_house = True
+            in_barn = False
+            show_popup = (player.x, player.y)
+            break
+        if door_rect_2.colliderect(inside_rect):
+            in_barn = True
+            in_house = False
+            show_popup = (player.x, player.y)
+        else:
+            show_popup = None
+            in_barn = False
+            in_house = False
 
     # Handle game state "blank" logic
     if game_state == "blank" or game_state == "barn":
@@ -524,11 +497,11 @@ while True:
 
         font = pygame.font.SysFont("Courier New", 20)
         # Create the text to display the in_water status
-        status_text = f"In Water: {'Yes' if in_water else 'No'}"
-        text_surface = font.render(status_text, True, (0, 0, 0))
-        text_rect = text_surface.get_rect(topleft=(10, 10))  # Position it at the top left corner
-        screen.blit(text_surface, text_rect)
+        #status_text = f"In Water: {'Yes' if in_water else 'No'}"
+       # text_surface = font.render(status_text, True, (0, 0, 0))
+        #text_rect = text_surface.get_rect(topleft=(10, 10))  # Position it at the top left corner
+        #screen.blit(text_surface, text_rect)
     #pygame.display.update()
 
     pygame.display.flip()  # Refresh on-screen display
-    clock.tick(60)  # wait until next frame (at 60 FPS)
+    clock.tick(60)
