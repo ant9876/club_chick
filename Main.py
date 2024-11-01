@@ -148,6 +148,8 @@ class Apple_Tree(Tree):
             text3_rect = text3_surface.get_rect(
                 center=(popup_rect.centerx, popup_rect.centery + 40))  # Adjust y-position for centering
 
+
+
             # Blit the text onto the screen
             screen.blit(text1_surface, text1_rect)
             screen.blit(text2_surface, text2_rect)
