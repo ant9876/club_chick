@@ -23,7 +23,7 @@ entered_game = False
 space_pressed = False
 in_barn = False
 in_house = False
-apples_count=0
+apples_count =0
 total_count =0
 
 
